@@ -1,0 +1,41 @@
+//@version=4
+strategy("RSI-EMA-MACD Strategy")
+
+// 定义 RSI、EMA 和 MACD 指标
+rsiLength = input(14, title="RSI Length")
+rsiOverbought = input(70, title="RSI Overbought Level")
+rsiOversold = input(30, title="RSI Oversold Level")
+rsiValue = rsi(close, rsiLength)
+
+emaFastLength = input(10, title="Fast EMA Length")
+emaSlowLength = input(21, title="Slow EMA Length")
+emaFast = ema(close, emaFastLength)
+emaSlow = ema(close, emaSlowLength)
+
+macdFastLength = input(12, title="MACD Fast Length")
+macdSlowLength = input(26, title="MACD Slow Length")
+macdSignalLength = input(9, title="MACD Signal Length")
+macdLine = emaFast - emaSlow
+signalLine = ema(macdLine, macdSignalLength)
+histogram = macdLine - signalLine
+
+// 定义进出场条件和信号
+longCondition = rsiValue < rsiOversold and emaFast > emaSlow and macdLine > signalLine
+shortCondition = rsiValue > rsiOverbought and emaFast < emaSlow and macdLine < signalLine
+
+// 计算交易信号
+shouldLong = longCondition and not na(longCondition[1])
+shouldShort = shortCondition and not na(shortCondition[1])
+
+// 发出交易信号
+if shouldLong
+    strategy.entry("Long", strategy.long)
+if shouldShort
+    strategy.entry("Short", strategy.short)
+
+// 绘制进出场信号
+plotshape(shouldLong, style=shape.triangleup, location=location.belowbar, color=color.green, size=size.small)
+plotshape(shouldShort, style=shape.triangledown, location=location.abovebar, color=color.red, size=size.small)
+
+// 其他代码和指标定义
+// ...
